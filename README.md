@@ -29,7 +29,7 @@ With our Magento 2 Order Status Tracking, you can let your customers track their
 
 1. Track via Tracking Code:
 
-``
+```
 {
 lofTrackMyOrder(code: "8QH9524EN"){
   id
@@ -62,10 +62,11 @@ lofTrackMyOrder(code: "8QH9524EN"){
   }
 }
 }
-``
+```
 
 2. Track via Order Increment Id:
 
+```
 {
 lofTrackMyOrder(order_od: "000000012"){
   id
@@ -98,7 +99,7 @@ lofTrackMyOrder(order_od: "000000012"){
   }
 }
 }
-
+```
 ## Donation
 
 If this project help you reduce time to develop, you can give me a cup of coffee :) 
