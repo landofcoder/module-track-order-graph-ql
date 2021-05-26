@@ -24,7 +24,7 @@
   "repositories": {
       "module-trackorder-pro": {
         "type": "git",
-        "url": "https://github.com/landofcoder/module-ves-trackorder-graph-ql"
+        "url": "https://github.com/landofcoder/module-track-order-graph-ql"
       }
   }
 }
