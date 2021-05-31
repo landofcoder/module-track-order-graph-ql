@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Lof\TrackorderGraphQl\Model\Resolver\TrackOrderGuest;
+namespace Lof\TrackorderGraphQl\Model\Resolver\TrackOrder;
 
 use Magento\Framework\GraphQl\Query\Resolver\IdentityInterface;
 

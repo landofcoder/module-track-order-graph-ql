@@ -73,21 +73,38 @@ class TrackOrder implements ResolverInterface
         array $args = null
     ) {
         /** @var ContextInterface $context */
-        if (false === $context->getExtensionAttributes()->getIsCustomer()) {
-            throw new GraphQlAuthorizationException(__('The current customer isn\'t authorized.'));
-        }
         if(!$this->_trackorderHelper->getConfig('trackorder_general/enabled')){
             throw new GraphQlAuthorizationException(__('The function is not available.'));
         }
+        $enabled_guest_api = $this->_trackorderHelper->getConfig('trackorder_general/enabled_guest_api');
+
+        if (false === $context->getExtensionAttributes()->getIsCustomer() && !$enabled_guest_api) {
+            throw new GraphQlAuthorizationException(__('The current customer isn\'t authorized.'));
+        }
+        
         $items = [];
         $order_id = isset($args["order_id"])?trim($args["order_id"]):"";
         $code = isset($args["code"])?trim($args["code"]):"";
-        if(!$order_id && !$code){
-            throw new GraphQlInputException(__('Required parameter "order_id" or "code" is missing'));
+        $email = isset($args["email"])?trim($args["email"]):"";
+        if($enabled_guest_api){
+            if(!$order_id && !$code && !$email){
+                throw new GraphQlInputException(__('Required parameter "order_id" and "email" or "code" is missing'));
+            }elseif($order_id && !$code && !$email){
+                throw new GraphQlInputException(__('Required parameter "email" is missing'));
+            }elseif(!$order_id && !$code && $email){
+                throw new GraphQlInputException(__('Required parameter "order_id" is missing'));
+            }
+        }else {
+            if(!$order_id && !$code){
+                throw new GraphQlInputException(__('Required parameter "order_id" or "code" is missing'));
+            }
         }
         $orders = $this->collectionFactory->create($context->getUserId());
         if($order_id){
             $orders->addFieldToFilter("increment_id", $order_id);
+            if(false === $context->getExtensionAttributes()->getIsCustomer() && $email){
+                $orders->addFieldToFilter("customer_email", $email);
+            }
         }else{
             $orders->addAttributeToFilter("track_link", $code);
         }
