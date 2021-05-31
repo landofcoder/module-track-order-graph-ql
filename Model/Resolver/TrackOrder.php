@@ -76,17 +76,22 @@ class TrackOrder implements ResolverInterface
         if(!$this->_trackorderHelper->getConfig('trackorder_general/enabled')){
             throw new GraphQlAuthorizationException(__('The function is not available.'));
         }
+        //enabled guest track order or not.
         $enabled_guest_api = $this->_trackorderHelper->getConfig('trackorder_general/enabled_guest_api');
-
+        
         if (false === $context->getExtensionAttributes()->getIsCustomer() && !$enabled_guest_api) {
             throw new GraphQlAuthorizationException(__('The current customer isn\'t authorized.'));
         }
-        
-        $items = [];
+        //set Is Customer for guest track order
+        $isGuest = false;
+        if (false === $context->getExtensionAttributes()->getIsCustomer() && $enabled_guest_api) {
+            $context->getExtensionAttributes()->setIsCustomer(true);
+            $isGuest = true;
+        }
         $order_id = isset($args["order_id"])?trim($args["order_id"]):"";
         $code = isset($args["code"])?trim($args["code"]):"";
         $email = isset($args["email"])?trim($args["email"]):"";
-        if($enabled_guest_api){
+        if($enabled_guest_api && $isGuest){//validate for guest
             if(!$order_id && !$code && !$email){
                 throw new GraphQlInputException(__('Required parameter "order_id" and "email" or "code" is missing'));
             }elseif($order_id && !$code && !$email){
@@ -99,7 +104,11 @@ class TrackOrder implements ResolverInterface
                 throw new GraphQlInputException(__('Required parameter "order_id" or "code" is missing'));
             }
         }
-        $orders = $this->collectionFactory->create($context->getUserId());
+        $customer_id = 0;
+        if(false !== $context->getExtensionAttributes()->getIsCustomer()){
+            $customer_id = $context->getUserId();
+        }
+        $orders = $this->collectionFactory->create($customer_id);
         if($order_id){
             $orders->addFieldToFilter("increment_id", $order_id);
             if(false === $context->getExtensionAttributes()->getIsCustomer() && $email){
