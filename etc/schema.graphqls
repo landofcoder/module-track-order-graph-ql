@@ -6,4 +6,10 @@ type Query {
         order_id: String
         code: String 
     ): CustomerOrder @resolver(class: "Lof\\TrackorderGraphQl\\Model\\Resolver\\TrackOrder") @deprecated(reason: "Track Order Info from customer instead") @cache(cacheable: false)
+
+    lofTrackGuestOrder(
+        order_id: String
+        code: String
+        email: String
+    ): CustomerOrder @resolver(class: "Lof\\TrackorderGraphQl\\Model\\Resolver\\TrackOrderGuest") @deprecated(reason: "Track Order Info for guest instead") @cache( cacheIdentity: "Lof\\TrackorderGraphQl\\Model\\Resolver\\TrackOrderGuest\\Identity")
 }

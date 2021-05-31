@@ -20,9 +20,9 @@ use Magento\SalesGraphQl\Model\Resolver\CustomerOrders\Query\OrderFilter;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
 /**
- * TrackOrder data reslover
+ * TrackOrderGuest data reslover
  */
-class TrackOrder implements ResolverInterface
+class TrackOrderGuest implements ResolverInterface
 {
     /**
      * @var CollectionFactoryInterface
@@ -73,21 +73,25 @@ class TrackOrder implements ResolverInterface
         array $args = null
     ) {
         /** @var ContextInterface $context */
-        if (false === $context->getExtensionAttributes()->getIsCustomer()) {
-            throw new GraphQlAuthorizationException(__('The current customer isn\'t authorized.'));
-        }
         if(!$this->_trackorderHelper->getConfig('trackorder_general/enabled')){
             throw new GraphQlAuthorizationException(__('The function is not available.'));
         }
         $items = [];
         $order_id = isset($args["order_id"])?trim($args["order_id"]):"";
         $code = isset($args["code"])?trim($args["code"]):"";
-        if(!$order_id && !$code){
-            throw new GraphQlInputException(__('Required parameter "order_id" or "code" is missing'));
+        $email = isset($args["email"])?trim($args["email"]):"";
+
+        if(!$order_id && !$code && !$email){
+            throw new GraphQlInputException(__('Required parameter "order_id" and "email" or "code" is missing'));
+        }elseif($order_id && !$code && !$email){
+            throw new GraphQlInputException(__('Required parameter "email" is missing'));
+        }elseif(!$order_id && !$code && $email){
+            throw new GraphQlInputException(__('Required parameter "order_id" is missing'));
         }
-        $orders = $this->collectionFactory->create($context->getUserId());
-        if($order_id){
+        $orders = $this->collectionFactory->create();
+        if($order_id && $email){
             $orders->addFieldToFilter("increment_id", $order_id);
+            $orders->addFieldToFilter("customer_email", $email);
         }else{
             $orders->addAttributeToFilter("track_link", $code);
         }
